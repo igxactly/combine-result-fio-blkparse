@@ -40,7 +40,21 @@ File.open(ARGV[1], "r") do |f|
     $yabtar_res = o
 end
 
-$combined_res = {"fio_res"=>$fio_res, "yabtar_res"=>$yabtar_res}
+trans_fio_res = Hash.new
+
+$fio_res.keys.each do |key_1|
+    h = $fio_res[key_1]
+
+    h.keys.each do |key_2|
+        if trans_fio_res[key_2].nil?
+            trans_fio_res[key_2] = Hash.new
+        end
+
+        trans_fio_res[key_2][key_1] = h[key_2]
+    end
+end
+
+$combined_res = {"fio_res"=>trans_fio_res, "yabtar_res"=>$yabtar_res}
 
 # write breakdown result (in which format?)
 File.open(ARGV[2], "w") do |f|
