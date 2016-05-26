@@ -55,7 +55,7 @@ do
         yabtar.rb all.blktrace yabtar_result.json | tail; sync;
 
         # final result
-        combine-results.rb fio_result.json yabtar_result.json breakdown.json > breakdown.txt; sync;
+        combine-results.rb fio_result.json yabtar_result.json breakdown.json > breakdown.csv; sync;
         echo "parsing and anylysis done"
         cd ..;
     done;

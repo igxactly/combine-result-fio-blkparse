@@ -7,8 +7,6 @@ require 'json'
 
 # Signal.trap("PIPE", "EXIT")
 
-puts "\n\n"
-
 # read fio result
 File.open(ARGV[0], "r") do |f|
     t = f.read()
@@ -40,6 +38,7 @@ File.open(ARGV[1], "r") do |f|
     $yabtar_res = o
 end
 
+=begin
 trans_fio_res = Hash.new
 
 $fio_res.keys.each do |key_1|
@@ -53,16 +52,39 @@ $fio_res.keys.each do |key_1|
         trans_fio_res[key_2][key_1] = h[key_2]
     end
 end
+$fio_res = trans_fio_res
+=end
 
-$combined_res = {"fio_res"=>trans_fio_res, "yabtar_res"=>$yabtar_res}
+trans_fio_res = Hash.new
+
+$yabtar_res.keys.each do |key_1|
+    h = $yabtar_res[key_1]
+
+    h.keys.each do |key_2|
+        if trans_fio_res[key_2].nil?
+            trans_fio_res[key_2] = Hash.new
+        end
+
+        trans_fio_res[key_2][key_1] = h[key_2]
+    end
+end
+$yabtar_res = trans_fio_res
+
+$combined_res = $fio_res.merge($yabtar_res)
 
 # write breakdown result (in which format?)
 File.open(ARGV[2], "w") do |f|
     t = JSON.generate($combined_res)
     f.write(t)
-
-    puts t
 end
 
-puts "\n\n"
+final_res = Hash.new
 
+final_res["user"] = $combined_res["slat"]["mean"] * 1000.to_f
+final_res["kern_drv"] = $combined_res["DRV-Q"]["mean"]
+final_res["dev"] = $combined_res["C-DRV"]["mean"]
+final_res["kern_other"] = $combined_res["clat"]["mean"] * 1000.to_f - (final_res["kern_drv"] + final_res["dev"])
+
+# puts JSON.generate(final_res)
+
+puts "%.4f, %.4f, %.4f, %.4f" % final_res.values_at("user", "kern_other", "kern_drv", "dev") 
