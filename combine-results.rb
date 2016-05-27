@@ -14,6 +14,7 @@ File.open(ARGV[0], "r") do |f|
 
     $fio_res = {"clat" => Hash[*[["min", "max", "mean"], o["jobs"][0]["read"]["clat"].values_at("min", "max", "mean")].transpose.flatten], "slat" => Hash[*[["min", "max", "mean"], o["jobs"][0]["read"]["slat"].values_at("min", "max", "mean")].transpose.flatten]}
 
+    $fio_jobname = o["jobs"][0]["jobname"]
 # jobs [ {read, write, ...} ]
 #
 # grand_total_sum_slat = 0
@@ -80,6 +81,7 @@ end
 
 final_res = Hash.new
 
+final_res["jobname"] = $fio_jobname
 final_res["user"] = $combined_res["slat"]["mean"] * 1000.to_f
 final_res["kern_drv"] = $combined_res["DRV-Q"]["mean"]
 final_res["dev"] = $combined_res["C-DRV"]["mean"]
@@ -87,4 +89,4 @@ final_res["kern_other"] = $combined_res["clat"]["mean"] * 1000.to_f - (final_res
 
 # puts JSON.generate(final_res)
 
-puts "%.4f, %.4f, %.4f, %.4f" % final_res.values_at("user", "kern_other", "kern_drv", "dev") 
+puts "%s, %.4f, %.4f, %.4f, %.4f" % final_res.values_at("jobname", "user", "kern_other", "kern_drv", "dev")

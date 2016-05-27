@@ -23,11 +23,12 @@ fi
 single_test_script=~/fio_presets/do_test_read.sh
 
 dev=/dev/nvme0n1
-n_runt=1;
+n_runt=10;
 n_jobs=1; #8;
 format="json";
 kernel=$(uname -r | sed 's/\([0-9]\.[0-9]\+\).\+/\1/g');
 date=$(date -I)
+trace_arg="-a queue -a drv_data -a complete"
 
 for i in $(seq 1);
 do
@@ -41,7 +42,7 @@ do
 
         ### start trace
         echo "starting blktrace/fio..."
-        sleep 3; blktrace ${dev} & PID_BLKTRACE=$!;
+        sleep 3; blktrace ${trace_arg} ${dev} & PID_BLKTRACE=$!;
 
         ${single_test_script} ${testname} ${n_bs}k ${n_qd} ${n_runt} ${format} ${n_jobs} > fio_result.json; sync;
 
