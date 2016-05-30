@@ -37,20 +37,25 @@ for n_bs in 4 128; # for each block size
 do
     for n_qd in 1 1024; # for each queue depth
     do
-        testname="${kernel}_job${n_jobs}_bs${n_bs}k_qd${n_qd}";
+        testname="${kernel}_job${n_jobs}_bs${n_bs}k_qd${n_qd}_test${i}";
         mkdir -p ${testname}; cd ${testname};
 
         ### start trace
         echo "starting blktrace/fio..."
         sleep 3; blktrace ${trace_arg} ${dev} & PID_BLKTRACE=$!;
 
-        ${single_test_script} ${testname} ${n_bs}k ${n_qd} ${n_runt} ${format} ${n_jobs} > fio_result.json; sync;
+        # log cpu load
+        while true; do echo $(date -Ins) $(cat /proc/stat | egrep "(cpu |ctx)"); sleep 0.25; done > cpuload.log & PID_CPULOGGER=$!;
 
-        sleep 3; kill ${PID_BLKTRACE}; fg; sync;
+        # run fio test
+        ${single_test_script} ${testname} ${n_bs}k ${n_qd} ${n_runt} ${format} ${n_jobs} > fio_result.json; kill ${PID_CPULOGGER}; sync;
+
+        # stop trace
+        sleep 3; kill ${PID_BLKTRACE}; sync;
         echo "blktrace/fio done";
-        ### end trace
+        ### end of trace
 
-        # parse and analyze block trace
+        # parse and analyze block trace log
         echo "parsing results...";
         blkparse -O ${trace_arg} -i nvme0n1 -d all.blktrace; sync;
         yabtar.rb all.blktrace yabtar_result.json | tail; sync;
