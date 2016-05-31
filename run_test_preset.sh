@@ -62,7 +62,7 @@ do
     # parse and analyze block trace log
     echo "parsing results...";
     blkparse -O ${trace_arg} -i nvme0n1 -d all.blktrace; sync;
-    yabtar.rb all.blktrace yabtar_result.json | tail; sync;
+    yabtar.rb all.blktrace yabtar_result.json | tail -n 25; sync;
 
     # final result
     combine-results.rb fio_result.json yabtar_result.json breakdown.json > breakdown.csv; sync;
